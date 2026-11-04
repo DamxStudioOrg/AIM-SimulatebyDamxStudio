@@ -27,6 +27,8 @@ app/sim/build/
 *.exe
 *.AppImage
 *.blockmap
+# …except the published macOS installer at the repo root (Git LFS).
+!/Simulate by Damx Studio-0.1.0-arm64.dmg
 
 # Env, secrets, local data (examples ship; real values never do)
 .env
