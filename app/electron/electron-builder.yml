@@ -1,0 +1,37 @@
+appId: studio.damx.simulate
+productName: Simulate by Damx Studio
+directories:
+  output: dist-installer
+files:
+  - package.json
+  - main.js
+  - lib/**
+extraResources:
+  - from: ../../web/.next/standalone
+    to: aim-web
+  # The builder always skips a root-level node_modules under `from`, so the
+  # standalone runtime ships as its own entry (relative paths are packages).
+  - from: ../../web/.next/standalone/node_modules
+    to: aim-web/node_modules
+  - from: ../../web/.next/static
+    to: aim-web/.next/static
+  - from: ../../web/public
+    to: aim-web/public
+  - from: ../sim/dist/aim-sim-server
+    to: aim-sim/aim-sim-server
+  - from: vendor/node
+    to: node
+mac:
+  target:
+    - dmg
+    - zip
+  category: public.app-category.games
+  icon: build/icon.icns
+win:
+  target:
+    - nsis
+  icon: build/icon.ico
+linux:
+  target:
+    - AppImage
+  icon: build/icon.png

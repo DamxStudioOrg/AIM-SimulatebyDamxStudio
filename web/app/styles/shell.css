@@ -1,0 +1,693 @@
+/* Fixed stipple backdrop (brief row 42): drawn in code from tokens,
+   static, behind everything; panels stay opaque for readability. */
+.site-bg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* 13% film grain over the site background; paints above the
+   backdrop canvas (later in the DOM) but below all content. */
+.site-noise {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.13;
+  background-image: var(--noise);
+}
+
+/* Visual panel: 30% of the two panels (flex share against main's
+   70%), an opaque square with 25% corners holding the moon stage,
+   graphs, and 3D view. Square whenever it fits: aspect-ratio 1/1,
+   capped by viewport height with inner scroll. */
+.site-header {
+  position: relative;
+  z-index: 0;
+  max-width: none;
+  flex: 3 0 0;
+  min-width: 0;
+  align-self: center;
+  aspect-ratio: 1 / 1;
+  max-height: calc(100dvh - 2rem);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 25%;
+  /* Explicit ink, same as the controls panel: anything inheriting
+     body text would otherwise turn black on the dark panel. */
+  color: var(--ink);
+}
+/* Inner scroller, mirroring the controls panel's .shell: the bar
+   belongs to the square child, so the rounded outer clips its ends
+   and it reads inside the panel instead of riding the corner curve
+   full-height like a page bar. */
+.site-header .visual-scroll {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 1rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--brand) transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Safe centering, same as the controls panel: a published 3D
+     stage overflows the square, and plain centering would clip the
+     brand mark out of reach above the scroll container. */
+  justify-content: safe center;
+  min-width: 0;
+}
+
+@media (max-width: 48rem) {
+  /* Stacked first: full-width square above the controls panel. */
+  .site-header {
+    flex: none;
+    width: 100%;
+    max-height: 92dvh;
+  }
+}
+
+.site-header .brand {
+  font-size: var(--fs-base);
+  margin: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.site-header .brand a {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  line-height: 0;
+}
+/* Header brand mark: the logo links home above the record strip.
+   Small by design — the scroll-driven stage below is the visual. */
+.site-header .brand-mark {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 25%;
+}
+
+/* Published visual below the brand mark: full panel width; viewports
+   and charts size themselves to it (ResizeObserver / responsive
+   containers). The panel scrolls when mark + stats + visual overflow.
+   Enlarged, the slot floats into a large overlay above everything
+   but the onboarding tour. */
+.moon-stage-slot {
+  width: 100%;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+/* Centered flex items shrink to content: without a width the canvas
+   (width:100% of an auto-width figure, with JS rewriting its pixel
+   size from clientWidth) collapses to a sliver. Full width holds it. */
+.moon-stage-slot > * {
+  width: 100%;
+  min-width: 0;
+}
+.moon-stage-slot figure.cartoon {
+  margin: 0;
+}
+.moon-stage-tools {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 0.5rem;
+  align-self: stretch;
+}
+/* Page title below the brand mark on routes with no published
+   visual: a tilted sticker chip — signal-yellow fill with
+   near-black bold type, the palette's own celebration combo.
+   Shrink-wrapped (the column centers it), static tilt so
+   reduced-motion has nothing to calm. No enlarge — there is
+   nothing to enlarge. */
+.moon-stage-title {
+  width: auto;
+  max-width: 100%;
+  margin: 1rem 0 0;
+  padding: 0.35em 0.8em;
+  box-sizing: border-box;
+  background: var(--brand-2);
+  color: var(--on-brand-2);
+  text-align: center;
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  border-radius: var(--r-s);
+  transform: rotate(-3deg);
+  box-shadow: 0.15rem 0.15rem 0 rgba(0, 0, 0, 0.4);
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+/* Record strip between the moon and the scroll-driven visual:
+   compact 2x2, same voice as the old stats band. */
+.moon-stats-slot {
+  width: 100%;
+  margin-top: 0.75rem;
+}
+.moon-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1rem;
+  margin: 0;
+  text-align: center;
+}
+.moon-stats dt {
+  font-size: var(--fs-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.75;
+}
+.moon-stats dd {
+  margin: 0;
+  font-size: var(--fs-xl);
+  font-weight: 700;
+}
+.moon-stage-slot.is-big {
+  position: fixed;
+  inset: 4vmin;
+  /* The base slot's width: 100% would over-constrain the fixed box
+     (left + width set drops the right inset), parking the overlay
+     4vmin past the viewport edge with Shrink cut off. Auto lets the
+     insets size it. */
+  width: auto;
+  z-index: 60;
+  overflow-y: auto;
+  /* Sideways escape hatch, welded shut: the overlay can never grow a
+     horizontal scrollbar, so Shrink can never scroll off-screen. Wide
+     children (compare table) own their own scrollers instead. */
+  overflow-x: clip;
+  margin-top: 0;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+}
+/* Centralized at any width: children cap at a readable measure and
+   the flex column centers them. */
+.moon-stage-slot.is-big > * {
+  width: 100%;
+  max-width: 76rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.moon-stage-slot.is-big .moon-stage-tools {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  max-width: none;
+  background: var(--surface);
+  /* The popup's one control sits centered, never lost at an edge. */
+  justify-content: center;
+}
+/* The header is its own stacking context (z-index 0), so the fixed
+   overlay would paint under the controls panel without this lift.
+   Below the tour (9999), above everything else. */
+.site-header:has(.moon-stage-slot.is-big) {
+  z-index: 70;
+}
+
+.site-header .mode-switch {
+  justify-self: center;
+}
+
+.download-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  justify-self: center;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  text-decoration: none;
+  padding: var(--sp-xs) var(--sp-md);
+  border: 1px solid var(--line);
+  border-radius: var(--r-max);
+}
+
+.download-link:hover {
+  border-color: var(--brand-2);
+  color: var(--brand-2);
+}
+
+.download-link.download-aggressive {
+  border-color: var(--brand-2);
+  color: var(--brand-2);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.header-auth {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  justify-self: end;
+  gap: var(--sp-sm);
+}
+
+.header-auth button {
+  margin-top: 0;
+}
+
+.brand-link {
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.brand-mark {
+  color: var(--brand);
+}
+
+.console-play {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "game"
+    "controls";
+  align-items: start;
+}
+
+.console-play .result {
+  grid-area: game;
+  margin-top: 0;
+  min-width: 0;
+}
+
+.console-play .submit {
+  grid-area: controls;
+  min-width: 0;
+}
+
+/* The run action terminates the full-width control stack. */
+.console-play .submit > button {
+  width: 100%;
+}
+
+/* Run-button spinner: a chasing arc beside the live status text.
+   Decoration only — the text carries the report, and the arc stands
+   still when the player prefers reduced motion. */
+.run-spin {
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  margin-right: 0.5em;
+  vertical-align: -0.1em;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  animation: run-spin-turn 0.9s linear infinite;
+}
+
+@keyframes run-spin-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .run-spin {
+    animation: none;
+    border-top-color: currentColor;
+  }
+}
+
+/* The main column is the container the play grid responds to: side
+   by side only when the column itself fits both tracks (the 5fr track
+   needs a 19rem minimum, so ~44rem total). Viewport queries can't see
+   the moon reserve or the circle cap; this can. */
+.shell-main {
+  container-type: inline-size;
+}
+
+/* Side by side only while a verdict stands: the game fills the
+   wide track and the form scrolls beside it. Without a result the
+   submit breathes full width like the create branch; the glance
+   always spans the full row beneath. The form is deliberately not
+   sticky: it runs taller than the verdict track, and a sticky form
+   slides past its row and paints over the glance below (measured
+   300px+ of overlap on the tote verdict). */
+@container (min-width: 44rem) {
+  .console-play:has(.result) {
+    grid-template-columns: minmax(0, 7fr) minmax(19rem, 5fr);
+    grid-template-areas: "game controls";
+  }
+
+  .console-play:has(.result) .field-plan {
+    grid-column: 2;
+  }
+
+  .console-play .challenges-panel {
+    grid-column: 1 / -1;
+  }
+}
+
+.console-play .arena-sim svg,
+.game-empty {
+  width: 100%;
+}
+
+main.arena-page {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.arena-shell {
+  display: grid;
+  gap: 0;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  overflow-x: clip;
+}
+
+/* Edge-to-edge by design: the stage keeps square corners at every size,
+   and holds only the game view, centered in the column. */
+.stage-col {
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--sp-md);
+  background: transparent;
+  padding-top: var(--sp-xl);
+  padding-left: var(--sp-md);
+  z-index: 2;
+}
+
+.stage-col .cartoon {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+/* Circular 3D viewport: the square canvas crops to a disc on its own
+   dark ground, spaced away from the site backdrop so the models never
+   overlap it. */
+.stage-col figure.stage3d {
+  position: relative;
+  width: auto;
+  max-width: min(22rem, calc(100dvh - 22rem));
+  margin: 0 clamp(var(--moon-gap-min), 3vw, var(--moon-gap-max)) 0 0;
+}
+
+.stage-col figure.stage3d.is-big {
+  max-width: min(31.2rem, calc(100dvh - 8rem));
+}
+
+.stage-col figure.stage3d:fullscreen,
+.moon-stage-slot figure.stage3d:fullscreen {
+  max-width: none;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  background: transparent;
+}
+
+/* Full-screen stage keeps the site background: void base with the
+   raised planet wash behind the disc. */
+.stage-col figure.stage3d:fullscreen::backdrop,
+.moon-stage-slot figure.stage3d:fullscreen::backdrop {
+  background:
+    radial-gradient(
+      90vmin at 58% 102%,
+      rgba(122, 35, 35, 0.5) 0,
+      rgba(122, 35, 35, 0.16) 60%,
+      rgba(13, 4, 4, 0) 78%
+    ),
+    var(--bg-deep);
+}
+
+.stage-col figure.stage3d:fullscreen canvas,
+.moon-stage-slot figure.stage3d:fullscreen canvas {
+  width: min(100%, calc(100dvh - 4rem));
+  margin-inline: auto;
+}
+
+.stage-col figure.stage3d canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  background: var(--bg-deep);
+}
+
+/* 13% film grain over the circular viewports only. */
+.stage-col figure.stage3d::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  background-image: var(--noise);
+  opacity: 0.13;
+  pointer-events: none;
+}
+
+/* Viewport mode switch in the site header: one pill, two worlds.
+   Simulation fills the center screen with the sim; Controls shows
+   the full console. The trailing auto margin centers the pill
+   between the brand and the account cluster. */
+.mode-switch {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.2rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-deep) 82%, transparent);
+  border: 1px solid var(--line);
+}
+
+.mode-switch button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0.3rem 0.6rem;
+  font-size: var(--fs-sm);
+  border-radius: 999px;
+}
+
+.mode-switch button[aria-pressed="true"] {
+  border-color: var(--brand-2);
+  color: var(--brand-2);
+}
+
+/* Simulation mode: the rail (tabs included) goes away and the one
+   viewport centers on the screen in a single column. */
+.arena-shell[data-mode="simulation"] .rail {
+  display: none;
+}
+
+.arena-shell[data-mode="simulation"] {
+  flex-direction: column;
+}
+
+.arena-shell[data-mode="simulation"] .stage-col {
+  align-self: stretch;
+  padding-left: 0;
+}
+
+/* The Controls moon wraps the figure so it can act as the door
+   into Simulation; it shrink-wraps like the figure did. */
+.controls-stage {
+  align-self: flex-start;
+  cursor: pointer;
+}
+
+/* Simulation stage: the viewport grows to planet shape, stacking
+   above the in-flow dock moon unless a grand shell pins it. */
+.sim-stage {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.arena-shell[data-mode="simulation"] .sim-stage figure.stage3d {
+  width: min(88dvh, 92vw);
+  max-width: none;
+  margin: 0;
+}
+
+/* Simulation view switch: a Controls-sized moon at the top-left
+   carrying the Simulation/Ranks/Stats quick switch and the
+   cleared-count readout, wearing the planet's dark background. */
+.moon-dock {
+  position: relative;
+  align-self: center;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: min(19.5rem, 92vw, calc(100dvh - 22rem));
+  aspect-ratio: 1 / 1;
+  padding: 1rem 0.6rem;
+  margin-top: 0.75rem;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      color-mix(in srgb, var(--ink) 8%, transparent) 0,
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at 50% 108%,
+      color-mix(in srgb, var(--brand-deep) 55%, transparent) 0,
+      color-mix(in srgb, var(--brand-deep) 18%, transparent) 55%,
+      transparent 78%
+    ),
+    var(--bg-deep);
+  color: var(--ink);
+  border: 1px solid var(--brand-line);
+}
+
+/* 13% film grain over the dock moon. */
+.moon-dock::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-image: var(--noise);
+  opacity: 0.13;
+  pointer-events: none;
+}
+
+/* Grand shells (wide and landscape): the dock moon pins to the
+   stage column's top-left gutter and overlaps the disc's
+   top-left limb the way the Controls moon overlaps the planet.
+   Tighter shells keep the stacked moon below the disc. */
+@media (min-width: 80rem) and (min-aspect-ratio: 8/5) {
+  .arena-shell[data-mode="simulation"] .stage-col {
+    position: relative;
+  }
+
+  .moon-dock {
+    position: absolute;
+    top: 0;
+    left: 0.75rem;
+    margin-top: 0;
+  }
+
+  /* The ranks chart needs the full disc width, so its moon stays
+     below the disc while game and stats keep the top-left moon. */
+  .sim-stage[data-center="ranks"] ~ .moon-dock {
+    position: static;
+    margin-top: 0.75rem;
+  }
+}
+
+.dock-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+}
+
+.dock-nav button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0;
+  min-height: 40px;
+  padding: 0.3rem 0.9rem;
+  font-size: var(--fs-base);
+  border-radius: 999px;
+  color: var(--ink);
+}
+
+.dock-nav button[aria-pressed="true"] {
+  border-color: var(--brand-2);
+  color: var(--brand-2);
+  font-weight: 700;
+}
+
+.dock-readout {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Onboarding tour: one card over a lightly dimmed page, walking
+   every signed-in page. The scrim stays translucent (0.35) so the
+   page the step describes stays readable behind the card. Above
+   everything but nothing else — the tour must never trap a
+   returning user (see tour-overlay.tsx). */
+.tour-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+.tour-card {
+  background: var(--surface-2);
+  border: 1px solid var(--brand);
+  border-radius: var(--r-l);
+  padding: 1.5rem;
+  max-width: 420px;
+  color: var(--ink);
+  outline: none;
+}
+.tour-card h2 {
+  margin: 0.25rem 0 0.5rem;
+}
+.tour-card p {
+  margin: 0;
+}
+.tour-meta {
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+.tour-dots {
+  display: flex;
+  gap: var(--sp-xs);
+  margin-top: 1rem;
+}
+.tour-dots .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--line);
+}
+.tour-dots .dot.active {
+  background: var(--brand-2);
+}
+.tour-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+.tour-spacer {
+  flex: 1;
+}

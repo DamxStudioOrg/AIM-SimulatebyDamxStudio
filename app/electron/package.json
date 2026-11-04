@@ -1,0 +1,19 @@
+{
+  "name": "aim-arena-desktop",
+  "productName": "Simulate by Damx Studio",
+  "version": "0.1.0",
+  "private": true,
+  "author": "Damx Studio LTD.",
+  "description": "Simulate by Damx Studio desktop shell (Electron): local web console + sim, cloud board.",
+  "main": "main.js",
+  "scripts": {
+    "test": "node --test \"lib/**/*.test.js\" && node --check main.js && node --check preload.js",
+    "dev": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "optionalDependencies": {
+    "electron": "^39.0.0",
+    "electron-builder": "^26.0.0"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "electron-test-mac",
+  "version": "1.0.0",
+  "description": "Simple Electron test app for macOS",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "test": "echo \"No tests\"",
+    "build:mac": "electron-builder --mac"
+  },
+  "author": "Damx Studio",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^39.0.0",
+    "electron-builder": "^26.18.0"
+  },
+  "build": {
+    "appId": "com.damxstudio.electron-test",
+    "productName": "Electron Test",
+    "mac": {
+      "target": "dmg"
+    },
+    "files": [
+      "*"
+    ]
+  }
+}

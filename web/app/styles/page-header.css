@@ -1,0 +1,99 @@
+/* Page header: chunky overlapping word pills, one design on every
+   page. Yellow leads, orange rides low; the optional green third
+   pill overlaps the first row from below. Bright fills always pair
+   with near-black text, per the palette brief. Everything scales
+   in em off the h1 so the offsets stay proportional at any size. */
+
+/* h1.page-header (not .page-header): ties with header.top h1, and
+   this sheet loads after base.css, so the pills win there. */
+h1.page-header {
+  --ph-ink: #1a1005;
+  margin: 0 0 1.5rem;
+  text-align: center;
+  font-size: clamp(1.5rem, 1.1rem + 2.2vw, 2.3rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.ph-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.3em;
+}
+
+.ph-pill {
+  display: inline-block;
+  min-width: 0;
+  padding: 0.16em 0.5em 0.22em;
+  border-radius: 0.3em;
+  color: var(--ph-ink);
+  white-space: nowrap;
+  box-shadow: 0.1em 0.1em 0 rgb(0 0 0 / 0.45);
+}
+
+.ph-a {
+  background: var(--brand-2);
+}
+
+.ph-b {
+  background: var(--gold);
+  margin-top: 0.36em;
+}
+
+.ph-c {
+  background: var(--accent);
+}
+
+/* The green third pill overlaps the first row from below, on top. */
+.ph-row-2 {
+  margin-top: -0.22em;
+}
+
+.ph-row-2 .ph-pill {
+  position: relative;
+  z-index: 1;
+}
+
+/* The scroll highlight underlines lit titles; a rule under the pill
+   boxes would strike through their shadows, so the pills opt out. */
+.page-header[data-highlight-title] {
+  text-decoration: none;
+}
+
+/* One settle on load, staggered pill to pill — motion-gated, and
+   reduced-motion readers get the finished header with no animation. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes ph-settle {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .page-header .ph-pill {
+    animation: ph-settle 240ms ease-out both;
+  }
+
+  .page-header .ph-b {
+    animation-delay: 60ms;
+  }
+
+  .page-header .ph-row-2 .ph-pill {
+    animation-delay: 120ms;
+  }
+}
+
+/* Narrow columns: let long pills wrap their words instead of forcing
+   a sideways scroll. */
+@media (max-width: 30rem) {
+  .ph-pill {
+    white-space: normal;
+  }
+}

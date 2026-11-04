@@ -1,0 +1,23 @@
+// Knip 6 uses jsonc with real comments; unknown keys are hard errors.
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["app/page.tsx", "app/layout.tsx", "app/api/*/route.ts", "next.config.ts"],
+  "project": ["app/**/*.tsx", "app/**/*.ts", "lib/**/*.ts"],
+  "ignore": [".next/**", "coverage/**"],
+  // Tracked reason: knip 5.88 does not trace the gsap UMD/subpath bundle
+  // (app/arena-shell.tsx, app/iso-city.tsx), so it reports a false
+  // unused-dependency. Usage is proven by tsc + build.
+  // Same blind spot for the @phosphor-icons/react barrel
+  // (app/how-slideshow.tsx, app/ranks-panel.tsx), and for marked 18's
+  // export map outside route entries (app/guide-article.tsx): an identical
+  // import in an entry file traces fine. Usage is proven by tsc + build.
+  // Same blind spot for three 0.186, whose types live in @types/three
+  // (app/city-3d.tsx, app/tote-stage.tsx, app/ranks-analytics.tsx):
+  // knip traces the import sites but does not credit the runtime
+  // package outside route entries. Usage is proven by tsc + build.
+  // Same blind spot for pixi.js 8 (app/site-background.tsx):
+  // the static layer import traces under tsc + build only.
+  "ignoreDependencies": ["gsap", "@phosphor-icons/react", "marked", "three", "pixi.js"],
+  "vitest": true,
+  "next": true,
+}

@@ -1,0 +1,443 @@
+/* Casual challenge flow under the Simulation viewport: the same
+   moon ground as the Stats disc, keeping its strip shape. */
+.progress-strip {
+  position: relative;
+  align-self: center;
+  width: min(56rem, 100%);
+  text-align: center;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  background:
+    radial-gradient(2.6rem 2rem at 94% 14%, var(--moon-crater) 0 98%, transparent),
+    radial-gradient(3.4rem 2.6rem at 5% 86%, var(--moon-crater) 0 98%, transparent),
+    radial-gradient(2rem 1.6rem at 90% 92%, var(--moon-crater) 0 98%, transparent),
+    var(--moon);
+  color: var(--bg-deep);
+}
+
+/* 13% film grain over the strip, like the moon viewports. */
+.progress-strip::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-m);
+  background-image: var(--noise);
+  opacity: 0.13;
+  pointer-events: none;
+}
+
+.progress-strip .kicker {
+  color: var(--brand-deep);
+}
+
+.progress-strip .strip-note {
+  color: color-mix(in srgb, var(--bg-deep) 72%, transparent);
+}
+
+.progress-strip .ghost {
+  color: var(--bg-deep);
+}
+
+.progress-strip .ghost:hover {
+  color: var(--ink);
+}
+
+.progress-strip .strip-chips button[aria-pressed="true"] {
+  border-color: var(--bg-deep);
+  color: var(--bg-deep);
+}
+
+.progress-strip :focus-visible {
+  outline-color: var(--bg-deep);
+}
+
+/* Personal progress board: cleared trials in unified chain
+   order, living in the left stage slot on the ranks route (the
+   arena stats tab reuses it). Only finished challenges render —
+   no numbering, no placeholder rows. */
+.progress-board {
+  min-width: 0;
+  text-align: center;
+}
+
+/* Enlarged, the board caps at a readable measure and centers. */
+.moon-stage-slot.is-big .progress-board {
+  max-width: 40rem;
+  margin-inline: auto;
+}
+
+.strip-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-xs);
+  margin-bottom: 0.6rem;
+}
+
+/* Horizontal challenge card on wide shells, writeup centralized
+   like the planet panel default. */
+@media (min-width: 50rem) {
+  .progress-strip {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--sp-xl);
+    text-align: center;
+  }
+
+  .progress-strip .strip-chips,
+  .progress-strip > .strip-note:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .progress-strip .strip-actions {
+    margin-top: 0;
+    justify-content: flex-end;
+  }
+}
+
+.strip-chips button[aria-pressed="true"] {
+  border-color: var(--brand-2);
+  color: var(--brand-2);
+}
+
+.strip-title {
+  margin: 0.15rem 0 0.35rem;
+  font-size: var(--fs-lg);
+}
+
+.strip-note {
+  margin: 0.25rem 0;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+
+.strip-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-sm);
+  margin-top: 0.7rem;
+}
+
+/* Console mode fork: simulate or create. Two full-bleed choice
+   cards on first visit; the pick persists and a ghost switch
+   flips modes after. */
+.mode-switch {
+  margin: 0 auto 1rem;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.mode-gate {
+  text-align: center;
+}
+
+.mode-cards {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+@media (min-width: 48rem) {
+  .mode-cards {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.mode-card {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1.5rem 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--surface-2);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.mode-card:hover {
+  border-color: var(--brand-2);
+  transform: translateY(-2px);
+}
+
+.mode-card strong {
+  font-size: var(--fs-lg);
+}
+
+.mode-card span {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+
+/* Console section subtitles: one orienting line under every h2. */
+.section-sub {
+  margin: 0 0 var(--sp-md);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* Console chain strip: cleared count plus next trial, inline. */
+.chain-strip {
+  margin: 0 0 var(--sp-md);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  text-align: center;
+}
+
+/* Console challenges glance: bests chips, labeled impact bars,
+   next-trial CTA. Bars read theme tokens, so graphs follow the
+   site palette in every mode. */
+.cp-chips {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.25rem;
+  margin: 0.5rem 0 0.75rem;
+  padding: 0;
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.cp-graph {
+  display: block;
+  width: 100%;
+  max-width: 26rem;
+  height: auto;
+  margin: 0 auto;
+}
+
+.cp-label {
+  fill: var(--muted);
+  font-size: 11px;
+}
+
+.cp-value {
+  fill: var(--ink);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.cp-bar-city {
+  fill: var(--brand-2);
+}
+
+.cp-bar-tote {
+  fill: var(--accent);
+}
+
+/* Your focus card: the drill a recurring weakness points at. */
+.focus-card {
+  margin: 0 auto var(--sp-md);
+  max-width: 26rem;
+  padding: var(--sp-sm) var(--sp-md);
+  border: 1px solid var(--brand-2);
+  border-radius: var(--r-m);
+  text-align: left;
+}
+
+.focus-card h3 {
+  margin: 0 0 var(--sp-xs);
+  font-size: var(--fs-md);
+}
+
+.focus-card p {
+  margin: 0 0 var(--sp-sm);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+
+.focus-card .cta-row {
+  margin-bottom: 0;
+}
+
+/* Personal progress (cleared-trials board). */
+.board-title {
+  margin: 0.15rem 0 0.35rem;
+  font-size: var(--fs-lg);
+}
+
+.board-note {
+  margin: 0.25rem 0 0.7rem;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+
+.board-empty {
+  margin: 0.5rem 0;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+
+/* Compact rows for the narrow stage slot: kind tag, ellipsized
+   title, right-pinned score. Long model names truncate with the
+   full id on hover (title). */
+.board-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  text-align: left;
+}
+
+.board-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  font-size: var(--fs-sm);
+  border-bottom: 1px solid var(--line);
+}
+
+.board-list li:last-child {
+  border-bottom: 0;
+}
+
+.board-kind {
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.board-kind[data-kind="city"] {
+  color: var(--brand-2);
+}
+
+.board-kind[data-kind="tote"] {
+  color: var(--accent);
+}
+
+.board-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink);
+}
+
+.board-meta {
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.board-next {
+  margin: 0.7rem 0 0;
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+
+.board-next strong {
+  color: var(--brand-2);
+  font-weight: 700;
+}
+
+.rail {
+  min-width: 0;
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+  padding: 1.25rem 1.25rem 5rem;
+  position: relative;
+}
+
+/* Planet UI sits as a centered column on the planet — never
+   stretched from the moon's doorstep, never near the lane. */
+.rail-tabs,
+.rail-body {
+  width: 100%;
+  max-width: 50rem;
+  margin-inline: auto;
+  justify-self: center;
+}
+
+.rail-tabs {
+  display: none;
+  /* Controls are electron-only; web is download-only marketing view */
+}
+
+.rail-tabs a {
+  text-decoration: none;
+  font-weight: 700;
+  font-size: var(--fs-md);
+  padding: var(--sp-sm) 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+}
+
+.rail-tabs a:hover {
+  border-color: var(--brand);
+  background: var(--surface-2);
+}
+
+.rail-tabs a.tab-active {
+  border-color: var(--brand-2);
+  background: var(--surface-2);
+  color: var(--brand-2);
+}
+
+.rail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+  min-height: 0;
+  order: 1;
+  overflow-x: clip;
+  /* Clearance so content never scrolls underneath the bottom buttons. */
+  margin-bottom: 3.5rem;
+}
+
+/* Web marketing view: hide Electron-only bottom controls */
+.progress-strip,
+.lane-scroll {
+  display: none !important;
+}
+
+.moon-dock .dock-marketing {
+  padding: 0.75rem;
+  text-align: left;
+}
+.moon-dock .dock-kicker {
+  margin: 0 0 0.4rem;
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand-2);
+}
+.moon-dock .dock-mini {
+  margin: 0.25rem 0;
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  line-height: 1.35;
+}
+.moon-dock .download-row {
+  margin-top: 0.75rem;
+}
+.moon-dock .download-icons {
+  gap: 0.5rem;
+}
+.moon-dock .download-btn {
+  min-width: 90px;
+  padding: 0.4rem 0.6rem;
+  font-size: var(--fs-sm);
+}

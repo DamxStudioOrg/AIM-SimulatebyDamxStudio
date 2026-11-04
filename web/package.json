@@ -1,0 +1,53 @@
+{
+  "name": "aim-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "e2e": "playwright test",
+    "lint": "eslint --max-warnings=0 .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "deadcode": "knip --strict",
+    "cycles": "dpdm --no-warning --no-tree --exit-code circular:1 ./app/page.tsx",
+    "screenshots": "node scripts/screenshots.mjs",
+    "screenshots:check": "node scripts/screenshots.mjs --check",
+    "landing:check": "node scripts/landing-check.mjs",
+    "security:audit": "npm audit --audit-level=high",
+    "quality": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run deadcode && npm run cycles && npm run landing:check",
+    "quality:ci": "npm run quality && npm run security:audit && npm run build"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "@remixicon/react": "^4.9.0",
+    "@tailwindcss/postcss": "^4.3.3",
+    "gsap": "^3.15.0",
+    "marked": "^18.1.2",
+    "next": "16.4.3",
+    "pixi.js": "8.22.0",
+    "react": "19.3.1",
+    "react-aria-components": "^1.22.1",
+    "react-dom": "19.3.1",
+    "recharts": "^3.10.1",
+    "tailwind-merge": "^3.7.0",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "^1.57.0",
+    "@types/node": "26.6.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "dpdm": "3.15.1",
+    "eslint": "10.13.0",
+    "knip": "5.88.1",
+    "prettier": "3.9.10",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.1",
+    "vitest": "5.0.5"
+  }
+}

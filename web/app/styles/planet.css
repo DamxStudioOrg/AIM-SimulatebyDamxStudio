@@ -1,0 +1,1085 @@
+/* Governing controls panel: every page's content is a child of
+   this panel and cannot display outside its outer boundary.
+   The panel — never the child — decides display and alignment:
+   the Docs alignment (centered column, centralized titles and
+   writeups) is the default for every page. Children only supply
+   their writeups and buttons. (The class keeps its historic
+   `planet-panel` name; the panel is square now, not a planet.) */
+.planet-panel {
+  position: relative;
+  z-index: 0;
+  /* Query container: descendants adapt to the panel's real size —
+     viewport queries can't see the square cap. */
+  container-type: inline-size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  /* Square controls panel: fills the 70% main track, square whenever
+     it fits (aspect-ratio 1/1), capped by viewport height with inner
+     scroll, 25% corners, opaque for readability. */
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-height: calc(100dvh - 2rem);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: 25%;
+  background: var(--surface-2);
+  /* Explicit ink: unlayered BoardUI `body { color }` beats the layered
+     site body color, so anything inheriting body text turns black on
+     the dark panel. The panel sets ink once; descendants inherit it
+     (form controls carry their own colors). */
+  color: var(--ink);
+}
+
+@media (max-width: 48rem) {
+  /* Stacked below the visual panel: content-sized, the page scrolls. */
+  .planet-panel {
+    aspect-ratio: auto;
+    max-height: none;
+    min-height: 24rem;
+  }
+  .planet-panel > *:not(.planet-home-btn) {
+    height: auto;
+    overflow: visible;
+    /* Stacked panels size to their content with no inner scroll, so
+       an edge fade would permanently dim real content: none here. */
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}
+
+.planet-home-btn {
+  position: absolute;
+  left: 50%;
+  bottom: var(--planet-inset);
+  transform: translateX(-50%);
+  padding: 0.25rem;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface-2);
+  line-height: 0;
+  z-index: 2;
+}
+.planet-home-logo {
+  display: block;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+}
+@media (max-width: 48rem) {
+  .planet-home-logo {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+}
+.planet-home-btn:hover {
+  border-color: var(--brand-2);
+}
+
+.planet-panel > *:not(.planet-home-btn) {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--brand) transparent;
+  text-align: center;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Safe centering: short content centers, while tall content stays
+     top-aligned and fully scrollable instead of clipping its top out
+     of reach inside the scroll container. */
+  justify-content: safe center;
+  /* Tight edge fade: the 25% corners curve hard at the panel's top
+     and bottom, so text sliding under them would clip mid-word. The
+     fade voids the outer bands instead — and doubles as the scroll
+     affordance. Box-relative, so it stays pinned to the panel edges
+     while content slides underneath. The top band is only 0.75rem:
+     at-rest content (stats band padding, centered gate/landing)
+     never reaches it, so nothing readable dims before scrolling.
+     The bottom band is a full 5rem: the bottom corners intrude deep
+     (a quarter of the panel width), so the fold's cut rows void out
+     instead of showing clipped mid-word glyphs. */
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    black 0.75rem,
+    black calc(100% - 5rem),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    black 0.75rem,
+    black calc(100% - 5rem),
+    transparent 100%
+  );
+}
+
+/* Nested sections stay tight (2.5px): their shell or page section
+   already carries the corner gutters, so padding here would compound.
+   BoardUI cards carry their own frame, so they opt out via
+   .boardui-card, and the sign-in gate keeps its own padding via
+   .signin-card (this rule's specificity beats the gate's own padding,
+   so the gate must be exempted, not outranked). */
+.planet-panel section:not(.boardui-card):not(.signin-card) {
+  background: transparent;
+  border: 0;
+  padding: 2.5px;
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+/* Unbreakable strings (arena IDs, share codes) wrap instead of
+   sliding under the corner curve. */
+.planet-panel code {
+  overflow-wrap: anywhere;
+}
+.planet-panel section:not(.boardui-card) > * {
+  /* Writeups span their section's full width — the section itself
+     carries the corner gutters, so no chord cap or 64ch island is
+     needed here. (The backdrop still publishes --panel-measure for
+     its own ambient geometry; rectangular panels don't consume it.) */
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+/* Direct-child sections stack their writeups vertically; the panel's
+   default row direction would squeeze them side by side. Corner
+   gutters (container-relative, so they scale with the square cap):
+   the 25% radius intrudes ~12% of the panel width at the first text
+   rows, so edge-to-edge writeups clipped mid-word under the curve.
+   Bottom end-padding so the last row scrolls clear of the fixed home
+   button (landing content always overflows, so it never centers).
+   Specificity ties the strip rule above and wins by order. */
+.planet-panel > section:not(.boardui-card):not(.signin-card) {
+  flex-direction: column;
+  padding: clamp(1.25rem, 6cqw, 3rem) clamp(1.25rem, 7cqw, 4rem);
+  padding-bottom: 5rem;
+}
+/* Console shell inside the panel: stacked by default, since the
+   height-capped square rarely fits a 300px rail beside usable main
+   width. Side by side only once the panel itself is wide enough —
+   the viewport-based base grid can't see the square cap, the panel
+   container can. Top-aligned: auto margins would float short columns
+   mid-panel and trap tall ones. */
+.planet-panel > .shell {
+  display: grid;
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr);
+}
+@container (min-width: 66rem) {
+  .planet-panel > .shell {
+    grid-template-columns: 300px minmax(0, 1fr);
+  }
+  /* Nav stats stay 2x2 in the side rail, where the viewport-based
+     4-up rule would crush them. */
+  .planet-panel .stats-rail {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+/* Stacked nav compacts: stats and links run in rows across the full
+   planet width instead of a tall rail. Below phone width the 4-up
+   crushes ("Challenges cleared" clips), so stats fall back to 2x2. */
+@container (max-width: 65.99rem) {
+  .planet-panel .stats-rail {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .planet-panel .nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-sm);
+  }
+  .planet-panel .nav-list li {
+    flex: 1 1 10rem;
+  }
+}
+@container (max-width: 30rem) {
+  .planet-panel .stats-rail {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Console shell inside the panel: the same corner gutters as
+   direct-child sections (see above) — the old 2.5px inset let
+   writeups slide under the 25% corner curve and clip mid-word. A
+   signed-in shell gains bottom end-padding so its last row (Sign
+   out) scrolls clear of the fixed home button; the lone-gate shell
+   keeps none so the gate stays truly centered. */
+.planet-panel > .shell {
+  padding: clamp(1.25rem, 6cqw, 3rem) clamp(1.25rem, 7cqw, 4rem);
+}
+.planet-panel > .shell:has(.shell-main) {
+  padding-bottom: 5rem;
+}
+
+/* The moon (stage) rides a higher layer than the planet panel. */
+.stage-col {
+  position: relative;
+  z-index: 3;
+}
+
+.planet-panel h2,
+.planet-panel h3 {
+  text-align: center;
+}
+
+.planet-panel ul,
+.planet-panel ol {
+  text-align: center;
+  list-style-position: inside;
+}
+
+.planet-panel table {
+  margin-inline: auto;
+}
+
+.planet-panel[data-enabled="false"] {
+  display: none;
+}
+
+.rail-body input,
+.rail-body select,
+.rail-body textarea {
+  max-width: 100%;
+}
+
+/*
+ * Every doc tab spreads edge-to-edge inside the square panel; the
+ * 100rem cap only binds ultrawide viewports.
+ */
+.rail-body.doc {
+  max-width: 100%;
+}
+
+/* Lane scroll rail: hidden until the desktop shell, where it docks
+   at the planet's bottom-right, always inside the viewport. */
+.lane-scroll {
+  display: none;
+}
+
+.rail-body > section {
+  background: transparent;
+  border: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.rail-body table {
+  margin-inline: auto;
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.rail-tabs {
+  justify-content: center;
+}
+
+.rail-body .history,
+.rail-body .result {
+  margin-top: 0;
+}
+
+.angle h3 {
+  margin: 0;
+  font-size: var(--fs-lg);
+  line-height: 1.3;
+}
+
+.rail-body figure {
+  margin: 0 0 1rem;
+}
+
+.rail-body figcaption {
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  padding-top: 0.4rem;
+}
+
+.figure-empty {
+  min-height: 12rem;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: var(--sp-lg);
+  border: 1px dashed var(--brand);
+  border-radius: var(--r-l);
+  color: var(--muted);
+  font-weight: 600;
+  background: var(--bg-deep);
+}
+
+.slideshow {
+  display: grid;
+  gap: 1rem;
+}
+.planet-panel .slideshow {
+  gap: 1.25rem;
+}
+
+.story {
+  gap: 0.6rem;
+  padding: 0.9rem var(--sp-lg);
+  border: 1px solid var(--brand);
+  border-radius: var(--r-l);
+}
+
+.story .slide h3 {
+  font-size: var(--fs-xl);
+}
+
+.story .slide .lede {
+  font-size: var(--fs-base);
+}
+
+.story .slide-controls {
+  gap: 0.5rem;
+}
+
+.story .icon-button {
+  width: 34px;
+  height: 34px;
+}
+
+.slide .angle-num {
+  display: block;
+  font-size: var(--fs-hero);
+}
+
+.slide h3 {
+  margin: 0.25rem 0 0.5rem;
+  font-size: var(--fs-2xl);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.planet-panel .slide h3 {
+  font-size: clamp(1.6rem, 2.2vw, 2.4rem);
+}
+
+.slide .lede {
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  max-width: 100%;
+}
+
+/* Landing slide writeup: centered in the planet with a yellow title
+   and a bright lede — the grey-on-dark body was reading dull.
+   Scoped to the landing section: the challenge story reuses these
+   classes with its own smaller treatment. */
+.landing-section .slide {
+  text-align: center;
+}
+.landing-section .slide h3 {
+  color: var(--brand-2);
+}
+.landing-section .slide .lede {
+  color: var(--ink);
+}
+.landing-section .slide-controls {
+  justify-content: center;
+}
+
+/* Scroll-linked text highlight: the scope renders display: contents,
+   so the direct-child width caps mirror through it. The lit passage
+   gains a yellow title underline; console titles also turn yellow
+   (slide titles already are). Color-only: opacity would fight the
+   parallax. */
+.highlight-scope {
+  display: contents;
+}
+.planet-panel section > .highlight-scope > .landing-grid {
+  max-width: 100%;
+}
+.planet-panel > section.landing-section > .highlight-scope > :not(.landing-grid) {
+  max-width: 100%;
+}
+[data-highlight-title] {
+  text-decoration: underline transparent 2px;
+  text-underline-offset: 0.35em;
+  transition:
+    color 0.3s ease,
+    text-decoration-color 0.3s ease;
+}
+[data-highlight].is-lit [data-highlight-title] {
+  text-decoration-color: var(--brand-2);
+}
+.console-page [data-highlight].is-lit [data-highlight-title] {
+  color: var(--brand-2);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-highlight-title] {
+    transition: none;
+  }
+}
+
+/* How to play is the landing page: hero-size heading, feature icon on
+   top of each slide, and a click-to-reveal detail panel. */
+.slide-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: var(--sp-sm);
+  border: 1px solid var(--brand-2);
+  border-radius: 50%;
+  color: var(--brand-2);
+  background: var(--surface-2);
+}
+
+.slide-detail {
+  margin: var(--sp-md) 0 0;
+  padding: var(--sp-md) var(--sp-lg);
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  background: var(--surface-2);
+  font-size: var(--fs-base);
+  color: var(--muted);
+}
+
+.slide-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-md);
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+}
+
+.slide-count {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: var(--fs-md);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.slide-dots {
+  display: flex;
+  gap: 0.4rem;
+  margin-left: auto;
+}
+
+.slide-dots button {
+  width: 14px;
+  min-height: 14px;
+  height: 14px;
+  margin-top: 0;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.slide-dots button.dot-active {
+  background: var(--brand-2);
+  border-color: var(--brand-2);
+}
+
+.play-cta {
+  margin-top: 1.25rem;
+}
+
+.play-cta button {
+  display: block;
+  width: 100%;
+  max-width: 40rem;
+  margin-inline: auto;
+  margin-top: 0;
+  padding: 0.85rem 1.25rem;
+  font-size: var(--fs-lg);
+}
+
+.kicker {
+  margin: 0;
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brand-2);
+}
+
+.share-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-sm);
+  margin-top: var(--sp-lg);
+}
+
+.share-row .hint {
+  margin-top: 0;
+}
+
+.share-row .icon-button,
+.share-row button {
+  margin-top: 0;
+}
+
+.signin-card {
+  /* Frameless: the gate sits directly on the opaque controls panel
+     (no card nested in a panel), capped to a comfortable measure so
+     its lines don't span the whole wide square. Explicit ink:
+     unlayered BoardUI `body { color }` beats the layered site body
+     color, so anything that inherits body text turns black on the
+     dark panel. The gate sets its own. */
+  border: 0;
+  padding: var(--sp-lg) var(--sp-xl);
+  background: transparent;
+  color: var(--ink);
+  width: 100%;
+  max-width: 34rem;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-md);
+}
+
+/* The gate is the shell's only child when signed out: span all columns. */
+.shell > .signin-card {
+  grid-column: 1 / -1;
+}
+
+/* A lone gate centers vertically in the tall square instead of
+   floating at the top with a void below it. The signed-in console
+   (rail + main) keeps top alignment. */
+.planet-panel > .shell:has(> .signin-card:only-child) {
+  align-content: center;
+}
+
+.signin-card h2 {
+  margin: 0;
+  font-size: var(--fs-2xl);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--brand-2);
+}
+
+.signin-card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.signin-card .cta-row {
+  margin-top: var(--sp-sm);
+}
+
+/* Existing-ID login: a collapsed disclosure so first-run visitors
+   see one button, while previous users expand and paste their ID. */
+.adopt-id {
+  width: 100%;
+  max-width: 26rem;
+  margin-inline: auto;
+  text-align: center;
+}
+.adopt-id summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--brand-2);
+  border-radius: var(--r-s);
+}
+.adopt-id label {
+  display: block;
+  margin-top: var(--sp-md);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+.adopt-id input {
+  width: 100%;
+  margin-top: var(--sp-xs);
+  font-family: ui-monospace, monospace;
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+
+@media (min-width: 70rem) {
+  /*
+   * Desktop Controls is always side-by-side: the moon keeps its
+   * top-left column and the writeup starts at the top of the
+   * planet's open right side. The page scrolls for tall content;
+   * short pages stay short. The lane runs between the columns.
+   */
+  .arena-shell {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    --planet-size: min(96vw, 1100px);
+  }
+
+  .stage-col {
+    flex: 0 0 auto;
+    min-height: 0;
+    overflow: hidden;
+    align-self: flex-start;
+    position: fixed;
+    left: calc(50vw - var(--planet-size) / 2 - 19.5rem + 3px);
+    top: 2rem;
+    z-index: 4;
+  }
+
+  .stage-col figure.stage3d {
+    width: 100%;
+    max-width: 19.5rem;
+    align-self: flex-start;
+    margin: 0;
+  }
+
+  /* The moon's own enlarge control grows the figure downward; the page scrolls. */
+  .stage-col figure.stage3d.is-big {
+    max-width: min(31.2rem, 85dvh);
+  }
+
+  .rail {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    overflow-x: clip;
+    overflow-y: visible;
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .rail-tabs {
+    max-width: 50rem;
+  }
+
+  /* Bottom fade above the tab bar; edge fading toward the rim
+     lives in the Pixi edge veil, which tracks real scroll. */
+  .rail-body {
+    overflow-y: visible;
+    overflow-x: clip;
+    padding-right: 0.25rem;
+  }
+
+  .rail-body::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* The lane-scroll is the page scroller on desktop, so the
+     native page bar hides; inner boxes keep their thin thumbs. */
+  html {
+    scrollbar-width: none;
+  }
+
+  html::-webkit-scrollbar {
+    display: none;
+  }
+
+  .lane-scroll {
+    display: block;
+    position: fixed;
+    right: 6px;
+    bottom: 6rem;
+    height: 28%;
+    width: 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    z-index: 4;
+  }
+
+  .lane-thumb {
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    border-radius: 999px;
+    background: linear-gradient(var(--brand), var(--brand-2));
+    cursor: grab;
+  }
+
+  .lane-thumb:focus-visible {
+    outline: 2px solid var(--brand-2);
+    outline-offset: 1px;
+  }
+}
+
+/* Stack tabs (every non-play tab on desktop Controls): the shell un-flexes and
+   the moon floats left at its size with its gutter. The title rides
+   way up next to it as a capped flow-root column — starting past
+   the moon box whatever its size, wrapping to multiple lines when
+   long — while everything else clears below the moon into the
+   centralized edge-to-edge column. A slim script measurement pads
+   the rail below the panel apex; console tabs and narrow shells
+   keep their own layouts. */
+@media (min-width: 70rem) {
+  .arena-shell[data-mode="controls"]:not([data-tab="play"]) {
+    display: block;
+  }
+
+  .arena-shell[data-mode="controls"]:not([data-tab="play"]) .stage-col {
+    float: none;
+    margin: 0;
+    position: fixed;
+    left: calc(50vw - var(--planet-size) / 2 - 19.5rem + 3px);
+    top: 2rem;
+    z-index: 4;
+  }
+
+  .arena-shell[data-mode="controls"]:not([data-tab="play"]) .stage-col figure.stage3d {
+    width: 19.5rem;
+    max-width: min(19.5rem, calc(100dvh - 22rem));
+    margin: 0;
+  }
+
+  .arena-shell[data-mode="controls"]:not([data-tab="play"])
+    .stage-col
+    figure.stage3d.is-big {
+    width: min(31.2rem, 85dvh);
+    max-width: min(31.2rem, 85dvh);
+  }
+
+  .arena-shell[data-mode="controls"]:not([data-tab="play"]) .rail {
+    display: block;
+    overflow: visible;
+    /* align-content:start would collect the block's content as an
+       alignment unit that shrinks away from the moon float; normal
+       keeps the border box full-width. */
+    align-content: normal;
+  }
+
+  .arena-shell[data-mode="controls"]:not([data-tab="play"]) .rail-body {
+    display: block;
+    overflow: visible;
+  }
+
+  /* The governing panel lays out as a block here so its children
+     can float-clear below the moon like the Docs column. */
+  .arena-shell[data-mode="controls"]:not([data-tab="play"]) .planet-panel {
+    display: block;
+  }
+
+  .arena-shell[data-mode="controls"]:not([data-tab="play"]) .planet-panel > * {
+    margin-bottom: 1.25rem;
+  }
+
+  /* The title column starts past the moon box at whatever size the
+     moon is, capped so its lines clear the rim shoulders, wrapping
+     to multiple lines when long. */
+  .arena-shell[data-mode="controls"]:not([data-tab="play"])
+    .planet-panel
+    > section
+    > h2:first-child {
+    display: flow-root;
+    max-width: 20rem;
+    margin-top: 0;
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  /* Everything after the title clears below the moon. */
+  .arena-shell[data-mode="controls"]:not([data-tab="play"]) .planet-panel > * + *,
+  .arena-shell[data-mode="controls"]:not([data-tab="play"])
+    .planet-panel
+    > section
+    > *
+    + * {
+    clear: left;
+  }
+}
+
+.game-empty {
+  display: grid;
+  place-items: center;
+  background: var(--bg-deep);
+  border: 1px dashed var(--brand);
+  border-radius: var(--r-l);
+  color: var(--muted);
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* !important: the universal selector loses to every class rule,
+     so without it class-driven loops (word rings, tickers) spin on. */
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Narrow screens: wide tables scroll inside their card instead of
+   breaking the layout; nothing else changes rank or order. */
+@media (max-width: 45rem) {
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  table th,
+  table td {
+    white-space: normal;
+  }
+}
+
+/* Prompt version diff in the run detail. */
+.prompt-diff {
+  line-height: 1.7;
+}
+
+.diff-added {
+  color: var(--pass);
+  font-weight: 700;
+}
+
+.diff-removed {
+  color: var(--danger);
+  text-decoration: line-through;
+}
+
+/* What-if preview controls in the turn inspection. */
+.what-if {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-sm);
+  margin-top: var(--sp-lg);
+}
+
+.what-if label {
+  margin: 0;
+}
+
+/* Landing left-panel challenge: the "prove it" dare, spread
+   across the visual square. The slot fills the column below the
+   brand mark and the beats distribute evenly down it, so the
+   tall panel reads designed instead of empty. */
+.site-header .moon-stats-slot:has(.landing-challenge) {
+  display: flex;
+  flex: 1;
+  align-self: stretch;
+  margin: 0;
+}
+
+.landing-challenge {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-evenly;
+  padding: 1rem 0.5rem;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.landing-challenge p {
+  margin: 0;
+}
+
+.lc-setup {
+  color: var(--muted);
+  font-size: var(--fs-xl);
+}
+
+.lc-ask {
+  color: var(--brand-2);
+  font-size: clamp(2.2rem, 1.4rem + 3.4vw, 3.1rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.lc-sub {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+
+/* The dare breathes: a slow pulse on "Prove it", motion-gated so
+   reduced-motion readers get the steady headline. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes lc-pulse {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.8;
+      transform: scale(1.04);
+    }
+  }
+
+  .lc-ask {
+    animation: lc-pulse 2.4s ease-in-out infinite;
+  }
+}
+
+/* Docs: capability list shared by /docs and the landing block
+   above the downloads. Centered measure, left-reading items. */
+.docs-panel {
+  display: grid;
+  gap: 1.1rem;
+  width: 100%;
+  max-width: 46rem;
+  margin-inline: auto;
+  text-align: left;
+}
+
+.docs-item h3 {
+  margin: 0 0 0.25rem;
+}
+
+.docs-item p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.docs-item ul {
+  margin: 0.4rem 0 0;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+
+/* Creator dressing preview: the drafted look, itemized. */
+.dress-detail {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.15rem 0.9rem;
+  margin: 0.4rem 0;
+  text-align: left;
+}
+
+.dress-detail dt {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.dress-detail dd {
+  margin: 0;
+}
+
+/* Landing grid: always a single centered column — slideshow above the
+   download column. Two text columns can never fit the circle: the
+   panel is height-capped (1100px at most), the circular clip narrows
+   every chord off the middle, and the rim mask fades everything past
+   80% radius, so side-by-side text always clips mid-word on the left
+   arc. Stacking keeps every glyph inside the readable chord at every
+   planet size, and the column scales with the circle uniformly. */
+.planet-panel section > .landing-grid {
+  max-width: 100%;
+}
+.landing-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-xl);
+  align-items: start;
+  justify-items: center;
+  margin-top: var(--sp-lg);
+  text-align: center;
+}
+/* Grid children run edge to edge: the square panel has straight
+   edges, so writeups span its full width instead of floating in a
+   narrow island. */
+.landing-grid > * {
+  width: 100%;
+  max-width: 100%;
+  margin-inline: auto;
+}
+/* Kicker and hint above the grid get the same full width: they are
+   direct section children, not grid children. */
+.planet-panel > section.landing-section > :not(.landing-grid) {
+  max-width: 100%;
+}
+.landing-grid .download-row {
+  margin-top: 0;
+}
+
+/* Moon placeholder – static branding, no simulation. The disc lives
+   in the site header; --moon-size overrides the default where needed. */
+.moon-placeholder {
+  width: var(--moon-size, 19.5rem);
+  height: var(--moon-size, 19.5rem);
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #e8d5c1, #c9b19a);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+
+/* Header moon mark: the 2D visual stage disc, centered in the 30%
+   visual panel beside the controls panel. Classic size (19.5rem),
+   shrinking only to fit the panel or short screens. Viewport units:
+   a percentage here would resolve against the brand link the figure
+   itself sizes (circular) and collapse the moon to zero. */
+.header-moon {
+  --moon-size: min(19.5rem, calc(30vw - 4.5rem), 56vh);
+  --moon-size: min(19.5rem, calc(30vw - 4.5rem), 56dvh);
+}
+
+@media (max-width: 48rem) {
+  /* Stacked: the visual panel is full width, so the moon sizes
+     against the viewport instead of the 30% share. */
+  .header-moon {
+    --moon-size: min(19.5rem, calc(100vw - 4rem), 56vh);
+    --moon-size: min(19.5rem, calc(100vw - 4rem), 56dvh);
+  }
+}
+/* A live 2D visual covers the classic crater face: the visual paints
+   its own opaque disc ground above the pseudo-element craters (the
+   ::after layer would otherwise paint over it in DOM order). */
+.moon-visual {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+}
+.moon-visual svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.site-header .brand a:focus-visible .brand-mark {
+  outline: 2px solid var(--brand-2);
+  outline-offset: 4px;
+}
+.moon-placeholder::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 20% 20%, rgba(0, 0, 0, 0.08), transparent 60%);
+  pointer-events: none;
+}
+.moon-placeholder::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(22% 22% at 28% 24%, #8b5a2b 0 42%, transparent 43%),
+    radial-gradient(15% 15% at 62% 30%, #8b5a2b 0 42%, transparent 43%),
+    radial-gradient(30% 30% at 45% 52%, #a67c52 0 45%, transparent 46%),
+    radial-gradient(12% 12% at 70% 62%, #8b5a2b 0 42%, transparent 43%),
+    radial-gradient(18% 18% at 30% 72%, #a67c52 0 44%, transparent 45%);
+  animation: moon-spin 20s linear infinite;
+  border-radius: 50%;
+}
+@keyframes moon-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

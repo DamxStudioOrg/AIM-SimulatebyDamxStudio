@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aim-sim"
+version = "0.1.0"
+description = "Resilient City Steward simulator core and match runner"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+api = ["fastapi==0.115.6", "uvicorn==0.34.0", "pydantic==2.10.4"]
+llm = ["litellm==1.61.0"]
+dev = ["pytest==8.3.4", "ruff==0.8.4", "mypy==1.13.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "D203", # conflicts with D213; one must go
+    "D401", # imperative-mood docstrings; clarity wins for state accessors
+    "COM812", # formatter owns trailing commas
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "PLR2004", "PT", "D102", "D103"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["aim_sim", "tests"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_unused_ignores = true
+mypy_path = ["src", "."]
+explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = ["fastapi.*", "litellm", "pydantic"]
+ignore_missing_imports = true
